@@ -1,73 +1,55 @@
 const axios = require("axios");
 const http = require("http");
+const { Wallet } = require("ethers");
+const { ClobClient } = require("@polymarket/clob-client");
 
-// =============================
-// WEATHER + MARKET CHECK
-// =============================
+// ================= CONFIG =================
 
-async function checkWeatherAndMarket() {
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+
+// ================= SETUP =================
+
+if (!PRIVATE_KEY) {
+  console.error("PRIVATE_KEY not found!");
+  process.exit(1);
+}
+
+const wallet = new Wallet(PRIVATE_KEY);
+
+const client = new ClobClient({
+  chainId: 137,
+  signer: wallet,
+});
+
+// ================= TEST CONNECTION =================
+
+async function testConnection() {
   try {
-    console.log("----- SCAN START -----");
+    console.log("----- TEST CLOB CONNECTION -----");
 
-    // 1️⃣ NOAA Weather (NYC grid)
-    const weather = await axios.get(
-      "https://api.weather.gov/gridpoints/OKX/33,35/forecast"
-    );
+    const markets = await client.getMarkets();
 
-    const today = weather.data.properties.periods[0];
-    const forecastTemp = today.temperature;
+    console.log("Connected.");
+    console.log("Total markets fetched:", markets.length);
 
-    console.log("NOAA Temperature:", forecastTemp);
-    console.log("Forecast:", today.shortForecast);
-
-    // 2️⃣ Fetch EVENTS instead of markets
-const events = await axios.get(
-  "https://gamma-api.polymarket.com/events?active=true&limit=100"
-);
-
-console.log("=== WEATHER EVENTS ===");
-
-events.data
-  .filter(e => {
-    if (!e.title) return false;
-
-    const title = e.title.toLowerCase();
-
-    return (
-      title.includes("temperature") ||
-      title.includes("high temperature") ||
-      title.includes("weather") ||
-      title.includes("new york") ||
-      title.includes("chicago") ||
-      title.includes("boston")
-    );
-  })
-  .forEach(e => {
-    console.log("Weather Event:", e.title);
-    console.log("-------------------");
-  });
-    
-    console.log("----- SCAN END -----");
-    console.log("");
+    // Print first 5 markets
+    markets.slice(0, 5).forEach(m => {
+      console.log("Market:", m.slug);
+    });
 
   } catch (err) {
-    console.error("Error:", err.message);
+    console.error("CLOB ERROR:", err.message);
   }
 }
 
-// Run every 2 minutes
-setInterval(checkWeatherAndMarket, 120000);
-checkWeatherAndMarket();
+setInterval(testConnection, 120000);
+testConnection();
 
-// =============================
-// KEEP RAILWAY ALIVE (WEB SERVER)
-// =============================
+// ================= KEEP RAILWAY ALIVE =================
 
 const server = http.createServer((req, res) => {
   res.writeHead(200);
-  res.end("Weather bot is running");
+  res.end("Weather auto trade bot running");
 });
 
-server.listen(process.env.PORT || 3000, () => {
-  console.log("Server listening on port", process.env.PORT || 3000);
-});
+server.listen(process.env.PORT || 3000);
