@@ -1,23 +1,40 @@
 const axios = require("axios");
 
-async function checkWeather() {
+async function checkWeatherAndMarket() {
   try {
-    const response = await axios.get(
+    // 1️⃣ NOAA
+    const weather = await axios.get(
       "https://api.weather.gov/gridpoints/OKX/33,35/forecast"
     );
 
-    const today = response.data.properties.periods[0];
+    const today = weather.data.properties.periods[0];
+    const forecastTemp = today.temperature;
 
-    console.log("City: NYC");
-    console.log("Temperature:", today.temperature);
-    console.log("Forecast:", today.shortForecast);
-    console.log("Time:", new Date().toLocaleString());
-    console.log("---------------------------");
+    // 2️⃣ Polymarket example (NYC temp market)
+    const market = await axios.get(
+      "https://gamma-api.polymarket.com/markets"
+    );
 
-  } catch (error) {
-    console.error("Error:", error.message);
+    // Cari market yang ada NYC
+    const nycMarket = market.data.find(m =>
+      m.question && m.question.includes("NYC")
+    );
+
+    console.log("NOAA Temperature:", forecastTemp);
+
+    if (nycMarket) {
+      console.log("Market Question:", nycMarket.question);
+      console.log("Market Price:", nycMarket.outcomePrices);
+    } else {
+      console.log("NYC market not found");
+    }
+
+    console.log("----------------------------");
+
+  } catch (err) {
+    console.error("Error:", err.message);
   }
 }
 
-setInterval(checkWeather, 60000);
-checkWeather();
+setInterval(checkWeatherAndMarket, 120000);
+checkWeatherAndMarket();
