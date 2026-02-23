@@ -9,7 +9,7 @@ async function checkWeatherAndMarket() {
   try {
     console.log("----- SCAN START -----");
 
-    // 1️⃣ NOAA Weather
+    // 1️⃣ NOAA Weather (NYC grid)
     const weather = await axios.get(
       "https://api.weather.gov/gridpoints/OKX/33,35/forecast"
     );
@@ -20,20 +20,28 @@ async function checkWeatherAndMarket() {
     console.log("NOAA Temperature:", forecastTemp);
     console.log("Forecast:", today.shortForecast);
 
-    // 2️⃣ Polymarket Markets
+    // 2️⃣ Polymarket Markets (limit to reduce load)
     const market = await axios.get(
-      "https://gamma-api.polymarket.com/markets"
+      "https://gamma-api.polymarket.com/markets?limit=200"
     );
 
-    const nycMarket = market.data.find(m =>
-      m.question && m.question.includes("NYC")
+    // Filter NYC temperature markets properly
+    const nycWeatherMarkets = market.data.filter(m =>
+      m.question &&
+      m.question.toLowerCase().includes("new york") &&
+      m.question.toLowerCase().includes("temperature")
     );
 
-    if (nycMarket) {
-      console.log("Market Question:", nycMarket.question);
-      console.log("Outcome Prices:", nycMarket.outcomePrices);
+    if (nycWeatherMarkets.length === 0) {
+      console.log("No NYC weather markets found");
     } else {
-      console.log("NYC market not found");
+      console.log("Found", nycWeatherMarkets.length, "NYC weather markets");
+
+      nycWeatherMarkets.forEach(m => {
+        console.log("Question:", m.question);
+        console.log("Outcome Prices:", m.outcomePrices);
+        console.log("---------------------------");
+      });
     }
 
     console.log("----- SCAN END -----");
