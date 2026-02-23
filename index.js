@@ -20,16 +20,15 @@ async function checkWeatherAndMarket() {
     console.log("NOAA Temperature:", forecastTemp);
     console.log("Forecast:", today.shortForecast);
 
-    // 2️⃣ Polymarket Markets (limit to reduce load)
-    const market = await axios.get(
-      "https://gamma-api.polymarket.com/markets?active=true&limit=200"
-    );
+    // 2️⃣ Fetch EVENTS instead of markets
+const events = await axios.get(
+  "https://gamma-api.polymarket.com/events?active=true&limit=100"
+);
 
-   // DEBUG: Show sample markets
-console.log("=== SAMPLE MARKETS ===");
+console.log("=== SAMPLE EVENTS ===");
 
-market.data.slice(0, 10).forEach(m => {
-  console.log("Question:", m.question);
+events.data.slice(0, 10).forEach(e => {
+  console.log("Event Title:", e.title);
   console.log("-------------------");
 });
 
