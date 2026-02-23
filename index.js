@@ -25,13 +25,30 @@ const events = await axios.get(
   "https://gamma-api.polymarket.com/events?active=true&limit=100"
 );
 
-console.log("=== SAMPLE EVENTS ===");
+console.log("=== WEATHER EVENTS ===");
 
-events.data.slice(0, 10).forEach(e => {
-  console.log("Event Title:", e.title);
-  console.log("-------------------");
-});
+console.log("=== WEATHER EVENTS ===");
 
+events.data
+  .filter(e => {
+    if (!e.title) return false;
+
+    const title = e.title.toLowerCase();
+
+    return (
+      title.includes("temperature") ||
+      title.includes("high temperature") ||
+      title.includes("weather") ||
+      title.includes("new york") ||
+      title.includes("chicago") ||
+      title.includes("boston")
+    );
+  })
+  .forEach(e => {
+    console.log("Weather Event:", e.title);
+    console.log("-------------------");
+  });
+    
     console.log("----- SCAN END -----");
     console.log("");
 
