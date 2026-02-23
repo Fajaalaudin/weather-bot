@@ -22,7 +22,7 @@ async function checkWeatherAndMarket() {
 
     // 2️⃣ Polymarket Markets (limit to reduce load)
     const market = await axios.get(
-      "https://gamma-api.polymarket.com/markets?limit=200"
+      "https://gamma-api.polymarket.com/markets?active=true&limit=200"
     );
 
    // DEBUG: Show sample markets
