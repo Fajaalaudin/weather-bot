@@ -1,8 +1,15 @@
 const axios = require("axios");
+const http = require("http");
+
+// =============================
+// WEATHER + MARKET CHECK
+// =============================
 
 async function checkWeatherAndMarket() {
   try {
-    // 1️⃣ NOAA
+    console.log("----- SCAN START -----");
+
+    // 1️⃣ NOAA Weather
     const weather = await axios.get(
       "https://api.weather.gov/gridpoints/OKX/33,35/forecast"
     );
@@ -10,37 +17,46 @@ async function checkWeatherAndMarket() {
     const today = weather.data.properties.periods[0];
     const forecastTemp = today.temperature;
 
-    // 2️⃣ Polymarket example (NYC temp market)
+    console.log("NOAA Temperature:", forecastTemp);
+    console.log("Forecast:", today.shortForecast);
+
+    // 2️⃣ Polymarket Markets
     const market = await axios.get(
       "https://gamma-api.polymarket.com/markets"
     );
 
-    // Cari market yang ada NYC
     const nycMarket = market.data.find(m =>
       m.question && m.question.includes("NYC")
     );
 
-    console.log("NOAA Temperature:", forecastTemp);
-
     if (nycMarket) {
       console.log("Market Question:", nycMarket.question);
-      console.log("Market Price:", nycMarket.outcomePrices);
+      console.log("Outcome Prices:", nycMarket.outcomePrices);
     } else {
       console.log("NYC market not found");
     }
 
-    console.log("----------------------------");
+    console.log("----- SCAN END -----");
+    console.log("");
 
   } catch (err) {
     console.error("Error:", err.message);
   }
 }
 
+// Run every 2 minutes
 setInterval(checkWeatherAndMarket, 120000);
 checkWeatherAndMarket();
-const http = require("http");
 
-http.createServer((req, res) => {
-  res.write("Bot is running");
-  res.end();
-}).listen(process.env.PORT || 3000);
+// =============================
+// KEEP RAILWAY ALIVE (WEB SERVER)
+// =============================
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end("Weather bot is running");
+});
+
+server.listen(process.env.PORT || 3000, () => {
+  console.log("Server listening on port", process.env.PORT || 3000);
+});
