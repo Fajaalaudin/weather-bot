@@ -25,24 +25,13 @@ async function checkWeatherAndMarket() {
       "https://gamma-api.polymarket.com/markets?limit=200"
     );
 
-    // Filter NYC temperature markets properly
-    const nycWeatherMarkets = market.data.filter(m =>
-      m.question &&
-      m.question.toLowerCase().includes("new york") &&
-      m.question.toLowerCase().includes("temperature")
-    );
+   // DEBUG: Show sample markets
+console.log("=== SAMPLE MARKETS ===");
 
-    if (nycWeatherMarkets.length === 0) {
-      console.log("No NYC weather markets found");
-    } else {
-      console.log("Found", nycWeatherMarkets.length, "NYC weather markets");
-
-      nycWeatherMarkets.forEach(m => {
-        console.log("Question:", m.question);
-        console.log("Outcome Prices:", m.outcomePrices);
-        console.log("---------------------------");
-      });
-    }
+market.data.slice(0, 10).forEach(m => {
+  console.log("Question:", m.question);
+  console.log("-------------------");
+});
 
     console.log("----- SCAN END -----");
     console.log("");
