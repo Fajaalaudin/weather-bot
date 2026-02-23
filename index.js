@@ -27,8 +27,6 @@ const events = await axios.get(
 
 console.log("=== WEATHER EVENTS ===");
 
-console.log("=== WEATHER EVENTS ===");
-
 events.data
   .filter(e => {
     if (!e.title) return false;
